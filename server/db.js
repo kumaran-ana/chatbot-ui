@@ -3,7 +3,7 @@ import pg from 'pg';
 const { Pool } = pg;
 
 const defaultConnectionString =
-  'postgresql://postgres:postgres@localhost:5432/searchsomething';
+  'postgresql://app_user:F28(}?v93%FE@devdb.anatech.ai:5432/searchsomething';
 
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL || defaultConnectionString,
