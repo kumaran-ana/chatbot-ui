@@ -5,7 +5,7 @@ dotenv.config();
 
 const { Pool } = pg;
 const defaultDatabaseUrl =
-  'postgresql://postgres:postgres@localhost:5432/searchsomething';
+   'postgresql://app_user:F28(}?v93%FE@devdb.anatech.ai:5432/searchsomething';
 
 const appDatabaseUrl = new URL(process.env.DATABASE_URL || defaultDatabaseUrl);
 const databaseName = appDatabaseUrl.pathname.replace(/^\//, '');
