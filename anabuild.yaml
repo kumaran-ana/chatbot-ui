@@ -1,6 +1,6 @@
 steps:
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-ui:${COMMIT_SHA}', '-f', 'ana-notification-javaapi/Dockerfile', 'ana-notification-javaapi']
+    args: ['build', '-t', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-ui:${COMMIT_SHA}', '.']
   - name: 'gcr.io/cloud-builders/docker'
     args: ['tag', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-ui:${COMMIT_SHA}', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-ui:latest']
   - name: 'gcr.io/cloud-builders/docker'
