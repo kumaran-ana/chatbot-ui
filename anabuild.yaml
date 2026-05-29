@@ -1,0 +1,12 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-ui:${COMMIT_SHA}', '-f', 'ana-notification-javaapi/Dockerfile', 'ana-notification-javaapi']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['tag', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-ui:${COMMIT_SHA}', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-ui:latest']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-ui:latest']
+
+logsBucket: 'gs://buildlogs-ana'
+serviceAccount: 'kumaran-anatechin-com@ana-tech-prod.iam.gserviceaccount.com'
+options:
+  logging: GCS_ONLY
