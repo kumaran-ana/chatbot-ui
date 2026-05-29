@@ -3,28 +3,30 @@ import pg from 'pg';
 
 dotenv.config();
 
-const { Pool } = pg;
-const defaultDatabaseUrl =
-   'postgresql://app_user:F28(}?v93%FE@devdb.anatech.ai:5432/searchsomething';
+const { Client } = pg;
+const DB_USER = process.env.DB_USER || 'app_user';
+const DB_PASSWORD = process.env.DB_PASSWORD || 'F28(}?v93%FE';
+const DB_HOST = process.env.DB_HOST || 'devdb.anatech.ai';
+const DB_NAME = process.env.DB_NAME || 'searchsomething';
+const DB_PORT = Number(process.env.DB_PORT || 5432);
+const DB_ADMIN_NAME = process.env.DB_ADMIN_NAME || 'postgres';
 
-const appDatabaseUrl = new URL(process.env.DATABASE_URL || defaultDatabaseUrl);
-const databaseName = appDatabaseUrl.pathname.replace(/^\//, '');
-const adminDatabaseUrl = new URL(
-  process.env.DATABASE_ADMIN_URL || appDatabaseUrl.toString(),
-);
-
-adminDatabaseUrl.pathname = '/postgres';
+const databaseName = DB_NAME;
 
 function quoteIdentifier(value) {
   return `"${value.replaceAll('"', '""')}"`;
 }
 
 if (!databaseName) {
-  throw new Error('DATABASE_URL must include a database name.');
+  throw new Error('DB_NAME must include a database name.');
 }
 
-const pool = new Pool({
-  connectionString: adminDatabaseUrl.toString(),
+const client = new Client({
+  user: DB_USER,
+  password: DB_PASSWORD,
+  host: DB_HOST,
+  database: DB_ADMIN_NAME,
+  port: DB_PORT,
   ssl:
     process.env.PGSSLMODE === 'require'
       ? { rejectUnauthorized: false }
@@ -32,17 +34,19 @@ const pool = new Pool({
 });
 
 try {
-  const existing = await pool.query(
+  await client.connect();
+
+  const existing = await client.query(
     'SELECT 1 FROM pg_database WHERE datname = $1',
     [databaseName],
   );
 
   if (existing.rowCount === 0) {
-    await pool.query(`CREATE DATABASE ${quoteIdentifier(databaseName)}`);
+    await client.query(`CREATE DATABASE ${quoteIdentifier(databaseName)}`);
     console.log(`Created PostgreSQL database "${databaseName}".`);
   } else {
     console.log(`PostgreSQL database "${databaseName}" already exists.`);
   }
 } finally {
-  await pool.end();
+  await client.end();
 }
