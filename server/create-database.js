@@ -4,10 +4,11 @@ import pg from 'pg';
 dotenv.config();
 
 const { Pool } = pg;
-const defaultDatabaseUrl =
-   'postgresql://app_user:F28(}?v93%FE@devdb.anatech.ai:5432/searchsomething';
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is required but not set.');
+}
 
-const appDatabaseUrl = new URL(process.env.DATABASE_URL || defaultDatabaseUrl);
+const appDatabaseUrl = new URL(process.env.DATABASE_URL);
 const databaseName = appDatabaseUrl.pathname.replace(/^\//, '');
 const adminDatabaseUrl = new URL(
   process.env.DATABASE_ADMIN_URL || appDatabaseUrl.toString(),

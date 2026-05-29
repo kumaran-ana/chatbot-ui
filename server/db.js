@@ -2,11 +2,12 @@ import pg from 'pg';
 
 const { Pool } = pg;
 
-const defaultConnectionString =
-  'postgresql://app_user:F28(}?v93%FE@devdb.anatech.ai:5432/searchsomething';
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is required but not set.');
+}
 
 export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || defaultConnectionString,
+  connectionString: process.env.DATABASE_URL,
   ssl:
     process.env.PGSSLMODE === 'require'
       ? { rejectUnauthorized: false }
