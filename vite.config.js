@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': 'http://localhost:5050',
+      '/api': 'https://chatbot-api-939800561122.asia-south1.run.app',
     },
   },
   build: {

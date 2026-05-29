@@ -1,11 +1,16 @@
 steps:
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-ui:${COMMIT_SHA}', '.']
+    args: ['build', '-t', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-ui:${COMMIT_SHA}', '-f', 'Dockerfile.client', '.']
   - name: 'gcr.io/cloud-builders/docker'
     args: ['tag', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-ui:${COMMIT_SHA}', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-ui:latest']
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-ui:latest']
-
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-api:${COMMIT_SHA}', '-f', 'Dockerfile.server', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['tag', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-api:${COMMIT_SHA}', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-api:latest']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'asia-south1-docker.pkg.dev/${PROJECT_ID}/chatbot-ui/chatbot-api:latest']
 logsBucket: 'gs://buildlogs-ana'
 serviceAccount: 'kumaran-anatechin-com@ana-tech-prod.iam.gserviceaccount.com'
 options:
