@@ -1,5 +1,7 @@
 import 'dotenv/config';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 import cors from 'cors';
 import express from 'express';
 import {
@@ -193,6 +195,21 @@ export function createApp() {
       next(error);
     }
   });
+
+  const distPath = path.resolve('dist');
+  const distIndexPath = path.join(distPath, 'index.html');
+
+  if (fs.existsSync(distIndexPath)) {
+    app.use(express.static(distPath));
+    app.get('*', (request, response, next) => {
+      if (request.path.startsWith('/api')) {
+        next();
+        return;
+      }
+
+      response.sendFile(distIndexPath);
+    });
+  }
 
   app.use((error, _request, response, _next) => {
     console.error(error);
