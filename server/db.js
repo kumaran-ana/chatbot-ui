@@ -1,20 +1,29 @@
 import pg from 'pg';
 
-const { Pool } = pg;
+const { Client } = pg;
 
-const defaultConnectionString =
-  'postgresql://app_user:F28(}?v93%FE@devdb.anatech.ai:5432/searchsomething';
+const DB_USER = process.env.DB_USER || 'app_user';
+const DB_PASSWORD = process.env.DB_PASSWORD || 'F28(}?v93%FE';
+const DB_HOST = process.env.DB_HOST || 'devdb.anatech.ai';
+const DB_NAME = process.env.DB_NAME || 'searchsomething';
+const DB_PORT = process.env.DB_PORT || 5432;
 
-export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || defaultConnectionString,
+export const client = new Client({
+  user: DB_USER,
+  password: DB_PASSWORD,
+  host: DB_HOST,
+  database: DB_NAME,
+  port: DB_PORT,
   ssl:
     process.env.PGSSLMODE === 'require'
       ? { rejectUnauthorized: false }
       : undefined,
 });
 
+await client.connect();
+
 export async function initDb() {
-  await pool.query(`
+  await client.query(`
     CREATE TABLE IF NOT EXISTS users (
       id BIGSERIAL PRIMARY KEY,
       session_id TEXT NOT NULL UNIQUE,
@@ -32,7 +41,7 @@ export async function initDb() {
 }
 
 export async function getUserBySession(sessionId) {
-  const result = await pool.query(
+  const result = await client.query(
     `SELECT * FROM users WHERE session_id = $1 LIMIT 1`,
     [sessionId],
   );
@@ -47,7 +56,7 @@ export async function upsertUserLocation({
   locationAccuracy,
   exactLocation,
 }) {
-  const result = await pool.query(
+  const result = await client.query(
     `
       INSERT INTO users (
         session_id,
@@ -79,7 +88,7 @@ export async function upsertUserLocation({
 }
 
 export async function appendChatMessages(sessionId, messages) {
-  const result = await pool.query(
+  const result = await client.query(
     `
       UPDATE users
       SET
