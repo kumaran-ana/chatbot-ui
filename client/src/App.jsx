@@ -39,7 +39,7 @@ function getSessionId() {
   return sessionId;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://chatbot-api-939800561122.asia-south1.run.app';
 
 async function apiFetch(path, options) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
