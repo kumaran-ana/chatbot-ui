@@ -6,7 +6,6 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
-RUN npm install
 RUN npm run build
 
 FROM node:20-alpine AS runtime
@@ -17,7 +16,7 @@ ENV NODE_ENV=production
 COPY package*.json ./
 RUN npm ci --omit=dev
 
-COPY --from=build /app/server ./server
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/server/static-server.js ./server/static-server.js
 
-CMD ["npm", "run", "client"]
+CMD ["node", "server/static-server.js"]
