@@ -14,6 +14,7 @@ const allowedClientOrigins = new Set([
   'https://chatbot-ui-beta-umber.vercel.app',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
+  'https://chatbot-ui-939800561122.asia-south1.run.app'
 ]);
 let dbReadyPromise;
 
