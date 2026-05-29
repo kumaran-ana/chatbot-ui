@@ -8,7 +8,14 @@ const currentFilePath = fileURLToPath(import.meta.url);
 const currentDirectoryPath = path.dirname(currentFilePath);
 const distDirectoryPath = path.resolve(currentDirectoryPath, '../dist');
 const indexFilePath = path.join(distDirectoryPath, 'index.html');
-const indexFileContent = await readFile(indexFilePath, 'utf8');
+let indexFileContent;
+
+try {
+  indexFileContent = await readFile(indexFilePath, 'utf8');
+} catch (error) {
+  console.error(`Failed to load ${indexFilePath}`, error);
+  process.exit(1);
+}
 
 const app = express();
 

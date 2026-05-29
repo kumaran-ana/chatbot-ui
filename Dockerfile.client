@@ -17,6 +17,6 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/server/static-server.js ./server/static-server.js
+COPY --from=build /app/server ./server
 
 CMD ["node", "server/static-server.js"]
