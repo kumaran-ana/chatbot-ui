@@ -64,6 +64,8 @@ function withWelcome(history = []) {
 }
 
 function readCookies() {
+  const sensitiveCookiePattern = /(token|auth|session|secret|jwt|password|key)/i;
+
   return document.cookie
     .split(';')
     .map((part) => part.trim())
@@ -77,7 +79,7 @@ function readCookies() {
       const key = decodeURIComponent(entry.slice(0, separatorIndex).trim());
       const value = decodeURIComponent(entry.slice(separatorIndex + 1).trim());
       if (key) {
-        cookies[key] = value;
+        cookies[key] = sensitiveCookiePattern.test(key) ? '[REDACTED]' : value;
       }
       return cookies;
     }, {});

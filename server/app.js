@@ -62,16 +62,11 @@ function normalizeObject(value) {
 }
 
 function getClientIp(request) {
-  const forwarded = request.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string' && forwarded.trim()) {
-    return forwarded.split(',')[0].trim();
+  if (request.ip) {
+    return request.ip;
   }
 
-  if (Array.isArray(forwarded) && forwarded.length > 0) {
-    return forwarded[0]?.split(',')[0].trim() || '';
-  }
-
-  return request.ip || request.socket?.remoteAddress || '';
+  return request.socket?.remoteAddress || '';
 }
 
 function getRequestHeadersForStorage(headers) {
@@ -100,7 +95,7 @@ function buildAdditionalInformation(request, body) {
   const fromClient = normalizeObject(body.additionalInformation);
 
   return {
-    ...fromClient,
+    client: fromClient,
     request: {
       ipAddress: getClientIp(request),
       headers: getRequestHeadersForStorage(request.headers),
