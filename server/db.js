@@ -31,13 +31,29 @@ export async function initDb() {
       longitude DOUBLE PRECISION,
       location_accuracy DOUBLE PRECISION,
       exact_location TEXT,
+      cookies JSONB NOT NULL DEFAULT '{}'::jsonb,
+      additional_information JSONB NOT NULL DEFAULT '{}'::jsonb,
       chat_history JSONB NOT NULL DEFAULT '[]'::jsonb,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS cookies JSONB NOT NULL DEFAULT '{}'::jsonb;
+
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS additional_information JSONB NOT NULL DEFAULT '{}'::jsonb;
+
     CREATE INDEX IF NOT EXISTS users_session_id_idx ON users (session_id);
   `);
+}
+
+function normalizeObject(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+
+  return value;
 }
 
 export async function getUserBySession(sessionId) {
@@ -55,7 +71,12 @@ export async function upsertUserLocation({
   longitude,
   locationAccuracy,
   exactLocation,
+  cookies,
+  additionalInformation,
 }) {
+  const normalizedCookies = normalizeObject(cookies);
+  const normalizedAdditionalInformation = normalizeObject(additionalInformation);
+
   const result = await client.query(
     `
       INSERT INTO users (
@@ -63,15 +84,19 @@ export async function upsertUserLocation({
         latitude,
         longitude,
         location_accuracy,
-        exact_location
+        exact_location,
+        cookies,
+        additional_information
       )
-      VALUES ($1, $2, $3, $4, NULLIF($5, ''))
+      VALUES ($1, $2, $3, $4, NULLIF($5, ''), $6::jsonb, $7::jsonb)
       ON CONFLICT (session_id)
       DO UPDATE SET
         latitude = COALESCE(EXCLUDED.latitude, users.latitude),
         longitude = COALESCE(EXCLUDED.longitude, users.longitude),
         location_accuracy = COALESCE(EXCLUDED.location_accuracy, users.location_accuracy),
         exact_location = COALESCE(EXCLUDED.exact_location, users.exact_location),
+        cookies = COALESCE(users.cookies, '{}'::jsonb) || COALESCE(EXCLUDED.cookies, '{}'::jsonb),
+        additional_information = COALESCE(users.additional_information, '{}'::jsonb) || COALESCE(EXCLUDED.additional_information, '{}'::jsonb),
         updated_at = NOW()
       RETURNING *
     `,
@@ -81,6 +106,8 @@ export async function upsertUserLocation({
       longitude ?? null,
       locationAccuracy ?? null,
       exactLocation?.trim() || '',
+      JSON.stringify(normalizedCookies),
+      JSON.stringify(normalizedAdditionalInformation),
     ],
   );
 

