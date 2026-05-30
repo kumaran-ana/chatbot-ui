@@ -53,6 +53,57 @@ function normalizeLocation(body) {
   };
 }
 
+function normalizeObject(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return {};
+  }
+
+  return value;
+}
+
+function getClientIp(request) {
+  if (request.ip) {
+    return request.ip;
+  }
+
+  return request.socket?.remoteAddress || '';
+}
+
+function getRequestHeadersForStorage(headers) {
+  const keysToStore = [
+    'user-agent',
+    'sec-ch-ua',
+    'sec-ch-ua-mobile',
+    'sec-ch-ua-platform',
+    'accept-language',
+    'origin',
+    'referer',
+    'host',
+    'x-forwarded-for',
+  ];
+
+  return keysToStore.reduce((acc, key) => {
+    const value = headers[key];
+    if (typeof value === 'string' && value.trim()) {
+      acc[key] = value;
+    }
+    return acc;
+  }, {});
+}
+
+function buildAdditionalInformation(request, body) {
+  const fromClient = normalizeObject(body.additionalInformation);
+
+  return {
+    client: fromClient,
+    request: {
+      ipAddress: getClientIp(request),
+      headers: getRequestHeadersForStorage(request.headers),
+      capturedAt: new Date().toISOString(),
+    },
+  };
+}
+
 function toPublicUser(user) {
   if (!user) {
     return null;
@@ -64,6 +115,8 @@ function toPublicUser(user) {
     longitude: user.longitude,
     locationAccuracy: user.location_accuracy,
     exactLocation: user.exact_location,
+    cookies: user.cookies || {},
+    additionalInformation: user.additional_information || {},
     chatHistory: user.chat_history || [],
     createdAt: user.created_at,
     updatedAt: user.updated_at,
@@ -138,6 +191,8 @@ export function createApp() {
       const user = await upsertUserLocation({
         sessionId,
         ...normalizeLocation(request.body),
+        cookies: normalizeObject(request.body.cookies),
+        additionalInformation: buildAdditionalInformation(request, request.body),
       });
 
       response.json({ user: toPublicUser(user) });
@@ -164,6 +219,8 @@ export function createApp() {
       const userBeforeReply = await upsertUserLocation({
         sessionId,
         ...normalizeLocation(request.body),
+        cookies: normalizeObject(request.body.cookies),
+        additionalInformation: buildAdditionalInformation(request, request.body),
       });
 
       const now = new Date().toISOString();
